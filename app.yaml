@@ -4,5 +4,10 @@ runtime: python
 api_version: 1
 
 handlers:
-- url: /.*
-  script: src/webapp/main.py
+- url: /
+  expiration: "30s"
+  static_files: src/webapp/static/html/index.html
+  upload: src/webapp/static/html/index.html
+  
+- url: /overhead.*
+  script: src/webapp/controller/overhead.py

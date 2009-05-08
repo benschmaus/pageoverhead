@@ -9,14 +9,15 @@ body { margin: 0; padding: 0; }
   left: 0;
   width: 100%;
   background: #000;
-  opacity: 0.2;
+  opacity: 0.2; /* works with new-ish versions of firefox */
 }
 </style>
 </head>
 <body>
 
-<iframe width="100%" height="100%" src="{{page}}"
+<iframe width="100%" height="100%" src="http://{{page}}"
 border="0" noborder="noborder" frameborder="0" padding="0" spacing="0"></iframe>
+
 <div id="overlay"></div>
 
 </body>
