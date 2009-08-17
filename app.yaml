@@ -4,10 +4,14 @@ runtime: python
 api_version: 1
 
 handlers:
+- url: /css
+  static_dir: webapp/static/css
+
+- url: /js
+  static_dir: webapp/static/js
+
 - url: /
-  expiration: "30s"
-  static_files: src/webapp/static/html/index.html
-  upload: src/webapp/static/html/index.html
-  
-- url: /overhead.*
-  script: src/webapp/controller/overhead.py
+  script: webapp/controller/index.py
+
+- url: /overhead([^/]*)/([^/]*)
+  script: webapp/controller/overhead.py
