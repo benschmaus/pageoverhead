@@ -47,9 +47,9 @@ $(document).ready(function() {
 {{ user }}
 <form method="post" action="/overheads/{{ user|urlencode }}/{{ page|urlencode }}">
 <input id="add-note" type="button" value="Add Note"/>
-tags <input type="text" size="30" />
-<input type="checkbox" value="public" /> public?
-<input type="button" value="Save"/>
+tags <input type="text" size="30" name="tags" value="{{ tags }}" />
+<input type="checkbox" value="public" name="access" {% ifequal access "public" %}checked="checked"{% endifequal %} /> public?
+<input type="submit" value="Save"/>
 </form>
 Go to <a href="http://{{ page }}">{{ page }}</a>
 </div>

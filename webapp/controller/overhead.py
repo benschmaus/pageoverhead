@@ -9,7 +9,7 @@ from pageoverhead import auth
 
 class OverheadPage(webapp.RequestHandler):
 
-    # Add param to decorator so we can check logged in user against user in request
+    # TODO ???Add param to decorator so we can check logged in user against user in request
     @auth.AuthenticationDecorator
     def get(self, user, page):
 
@@ -23,12 +23,28 @@ class OverheadPage(webapp.RequestHandler):
         self.response.headers['Content-Type'] = 'text/html'
         self.response.out.write(template.render(path, tmpl_vars))
 
-    # Note that if the user is logged out we need some workaround
+    # Note that if the user sends a POST but is logged out we need some workaround
     # to handle the POST after the user logs in.
     @auth.AuthenticationDecorator
-    def post(self, user, url):
-        self.response.headers['Content-Type'] = 'text/plain'
-        self.response.out.write('POST');
+    def post(self, user, page):
+        tags_str = self.request.get('tags')
+        tags = tags_str.split()
+
+        access = self.request.get('access')
+        if access != 'public':
+            access = 'private'
+
+        tmpl_vars = {
+            "user": urllib.unquote_plus(user),
+            "page": page,
+            "tags": tags_str,
+            "access": access
+        }
+
+        path = os.path.join(os.path.dirname(__file__), '../tmpl/overhead.tmpl')
+
+        self.response.headers['Content-Type'] = 'text/html'
+        self.response.out.write(template.render(path, tmpl_vars))
 
 application = webapp.WSGIApplication(
     [ ('/overheads/(.*)/(.*)', OverheadPage) ],
