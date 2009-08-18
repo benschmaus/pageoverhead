@@ -21,7 +21,10 @@ $(document).ready(function() {
         // Make an id for this note then add it to the DOM
         function() {
             var noteId = '{{ user }}' + "-" + ++noteCounter;
-            $('<div class="Note" id="' + noteId + '">' + noteId + '</div>').insertAfter('#menu-bar');
+            var note = $('<div class="Note" id="' + noteId + '">' + noteId + '</div>')
+            // TODO Dynamically set insertion position based on other existing notes?
+            note.css('top 20px', 'left: 8px');
+            note.insertAfter('#menu-bar');
             $(document.getElementById(noteId)).draggable({ cursor: 'crosshair' });
         }
     );

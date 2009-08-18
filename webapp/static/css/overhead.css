@@ -22,6 +22,7 @@ form {
 }
 .Note {
     z-index: 99;
+    position: absolute;
     padding: 5px;
     width: 200px;
     height: 100px;
