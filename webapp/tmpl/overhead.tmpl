@@ -1,5 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<html>
 <head>
 <style type="text/css">
 @import url(/css/main.css);
@@ -21,11 +20,13 @@ $(document).ready(function() {
         // Make an id for this note then add it to the DOM
         function() {
             var noteId = '{{ user }}' + "-" + ++noteCounter;
-            var note = $('<div class="Note" id="' + noteId + '">' + noteId + '</div>')
+            var note = $(
+                '<div class="Note" id="' + noteId + '"><div class="NoteHandle">' + noteId + '<span class="NoteClose">x</span></div><textarea></textarea></div>'
+            );
             // TODO Dynamically set insertion position based on other existing notes?
             note.css('top 20px', 'left: 8px');
             note.insertAfter('#menu-bar');
-            $(document.getElementById(noteId)).draggable({ cursor: 'crosshair' });
+            $(document.getElementById(noteId)).draggable({ 'cursor': 'crosshair', 'handle' : 'div'});
         }
     );
 });
