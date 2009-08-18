@@ -11,8 +11,8 @@ class IndexPage(webapp.RequestHandler):
     def get(self):
 
         user = users.get_current_user()
-        email = False
-        nickname = False
+        email = ''
+        nickname = ''
         if user:
             email = user.email()
             nickname = user.nickname()
