@@ -19,7 +19,7 @@ class IndexPage(webapp.RequestHandler):
 
         tmpl_vars = {
             "user_email" : email,
-            "user_nickname" : urllib.quote_plus(nickname),
+            "user_nickname" : nickname,
             "login_url" : users.create_login_url(self.request.uri),
             "logout_url" : users.create_logout_url(self.request.uri)
         }

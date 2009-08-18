@@ -1,5 +1,6 @@
 import cgi
 import os
+import urllib
 from google.appengine.api import users
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -8,10 +9,14 @@ from pageoverhead import auth
 
 class OverheadPage(webapp.RequestHandler):
 
+    # Add param to decorator so we can check logged in user against user in request
     @auth.AuthenticationDecorator
     def get(self, user, page):
 
-        tmpl_vars = {"page": page}
+        tmpl_vars = {
+            "user": urllib.unquote_plus(user),
+            "page": page
+        }
 
         path = os.path.join(os.path.dirname(__file__), '../tmpl/overhead.tmpl')
 
@@ -26,7 +31,7 @@ class OverheadPage(webapp.RequestHandler):
         self.response.out.write('POST');
 
 application = webapp.WSGIApplication(
-    [ ('/overhead', OverheadPage) ],
+    [ ('/overhead/(.*)/(.*)', OverheadPage) ],
     debug=True
 )
 

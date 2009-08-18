@@ -1,0 +1,12 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+#MenuBar {
+    padding: 10px 0 10px 8px;
+    background: #ccc;
+}
+form {
+    display: inline;
+}
+
