@@ -8,30 +8,13 @@ body {
     /*background: #33A6CF;*/
     background: #4AA5EF;
 }
-#notes-container {
-    border: 1px solid #000;
-    z-index: 99;
-    width: 100px;
-    height: 80px;
-}
 form {
     display: inline;
 }
-#delete-button {
-    text-align: right;
-}
 .Note {
-    z-index: 99;
-    position: absolute;
-    width: 200px;
-    height: 100px;
-    border: 1px solid #000;
 }
-.NoteHandle {
-    font-size: .9em;
-    background: #ddd;
-    padding: 2px;
+textarea {
+    width: 200;
+    height: 100;
 }
-.NoteClose {
-    text-align:right;
-}
+
