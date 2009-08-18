@@ -13,7 +13,7 @@ $(document).ready(function() {
             // Check to see that something was typed in.
             if (f.p.value == '') {
                 // Insert helpful message above form.
-                $('<div class="FormMessage">You forgot to enter a URL!</div>').insertBefore(document.forms[0]);
+                $('<div class="form-message">You forgot to enter a URL!</div>').insertBefore(document.forms[0]);
                 return false;
             }
             window.location = '/overhead/' + f.n.value + '/' + encodeURI(f.p.value);
