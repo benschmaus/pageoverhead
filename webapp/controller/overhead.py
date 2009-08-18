@@ -31,7 +31,7 @@ class OverheadPage(webapp.RequestHandler):
         self.response.out.write('POST');
 
 application = webapp.WSGIApplication(
-    [ ('/overhead/(.*)/(.*)', OverheadPage) ],
+    [ ('/overheads/(.*)/(.*)', OverheadPage) ],
     debug=True
 )
 
