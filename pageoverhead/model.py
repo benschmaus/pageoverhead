@@ -1,4 +1,14 @@
-import from google.appengine.ext import db
+from google.appengine.ext import db
+from google.appengine.ext.db import polymodel
+
+
+def get(user, url, entity_class):
+    query = entity_class.all().filter("user =", user).filter("url =", url)
+    return query.get()
+
+def fetch(user, url, entity_class):
+    query = entity_class.all().filter("user =", user).filter("url =", url)
+    return query
 
 class BaseEntity(polymodel.PolyModel):
     created = db.DateTimeProperty(auto_now_add=True)
