@@ -98,7 +98,7 @@ class OverheadPage(webapp.RequestHandler):
             bookmark_tag.put()
 
 application = webapp.WSGIApplication(
-    [ ('/overheads/(.*)/(.*)', OverheadPage) ],
+    [ ('/([^/]+)/overheads/(.*)', OverheadPage) ],
     debug=True
 )
 

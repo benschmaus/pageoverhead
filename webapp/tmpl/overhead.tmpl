@@ -13,31 +13,57 @@
 <script src="/js/ui.resizable.js" type="text/javascript"></script>
 <script src="/js/ui.dialog.js" type="text/javascript"></script>
 <script type="text/javascript">
-// TODO Move some of this to external script (eg, add note function)
-var noteCounter = 0;
+function zero_pad(s) {
+    return s < 10 ? "0" + s : s;
+}
+// TODO Move some of this to external script (eg, add note function)?
 $(document).ready(function() {
-    // Temp for testing
-    $('#notes-container').draggable({ cursor: 'crosshair' });
 
     $('#add-note').click(
         // Make an id for this note then add it to the DOM
         function() {
-            var noteId = '{{ user }}' + "-" + ++noteCounter;
+            var today = new Date();
+            var h = zero_pad(today.getHours());
+            var m = zero_pad(today.getMinutes());
+            var s = zero_pad(today.getSeconds());
+            var d = zero_pad(today.getDate());
+            var mn = zero_pad(today.getMonth()+1);
+
+            var noteId = '{{ user }}' + "-" + today.getTime();
             var note = $('<div class="Note" id="' + noteId + '"><textarea></textarea></div>');
             note.dialog(
                 {
-                    title: noteId,
-                    width: 230,
+                    title: '{{ user }} at ' + h + ':' + m + ':' + s + ', ' + mn + '/' + d,
+                    width: 240,
                     height: 198,
                     buttons: { 'Save' : function() {
-                        // TODO Save this note.
+                        // Make ajax call to save the note
+                        var note = $(this);
+                        var note_dialog = note.parent();
+                        var offset = note_dialog.offset();
+                        var oLeft = offset.left;
+                        var oTop = offset.top;
+                        var height = note_dialog.height();
+                        var width = note_dialog.width();
+                        var text = note.children('textarea').get(0).value;
+                        //note.children('textarea').get(0).value = text + '\n' + oLeft + ' ' + oTop + '\n' + height + ' ' + width;
+                        $.post(
+                            "/{{ user }}/overheads/{{ page }}/notes",
+                            { note_text : text, note_height : height, note_width : width, note_left : oLeft, note_top : oTop},
+                            function(data, textStatus) {
+                                if (textStatus == "success") {
+                                    alert('Note saved');
+                                }
+                            }
+                        );
                     }},
-                    position: [8, 100]
+                    position: [8, 100] // default left, top position for new note
                 }
             );
         }
     );
 
+    // Display existing notes
 });
 </script>
 </head>
@@ -45,7 +71,7 @@ $(document).ready(function() {
 
 <div id="menu-bar">
 {{ user }}
-<form method="post" action="/overheads/{{ user|urlencode }}/{{ page|urlencode }}">
+<form method="post" action="/{{ user }}/overheads/{{ page|urlencode }}">
 <input id="add-note" type="button" value="Add Note"/>
 <input id="manage-collaborators" type="button" value="Manage Collaborators"/>
 tags <input type="text" size="30" name="tags" value="{{ tags }}" />

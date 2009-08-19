@@ -16,7 +16,7 @@ $(document).ready(function() {
                 $('<div class="form-message">You forgot to enter a URL!</div>').insertBefore(document.forms[0]);
                 return false;
             }
-            window.location = '/overheads/' + encodeURIComponent(f.n.value) + '/' + encodeURI(f.p.value);
+            window.location = '/' + f.n.value + '/overheads/' + encodeURI(f.p.value);
             return false;
         }
     )
