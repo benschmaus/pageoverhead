@@ -10,7 +10,7 @@ def fetch(user, url, entity_class):
     query = entity_class.all().filter("user =", user).filter("url =", url)
     return query
 
-class BaseEntity(polymodel.PolyModel):
+class BaseEntity(db.Model):
     created = db.DateTimeProperty(auto_now_add=True)
     modified = db.DateTimeProperty(auto_now=True)
     user = db.UserProperty(auto_current_user_add=True)

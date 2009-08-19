@@ -24,7 +24,9 @@ class OverheadPage(webapp.RequestHandler):
             access = bookmark.access
 
         if bookmark_tags:
-            tags_str = ''.join(bookmark_tags)
+            def f(x): return x.tag
+            bookmark_tags = map(f, bookmark_tags)
+            tags_str = ' '.join(bookmark_tags)
 
         tmpl_vars = {
             "user": urllib.unquote_plus(user),
