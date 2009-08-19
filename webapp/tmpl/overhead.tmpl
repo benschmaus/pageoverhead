@@ -47,6 +47,7 @@ $(document).ready(function() {
 {{ user }}
 <form method="post" action="/overheads/{{ user|urlencode }}/{{ page|urlencode }}">
 <input id="add-note" type="button" value="Add Note"/>
+<input id="manage-collaborators" type="button" value="Manage Collaborators"/>
 tags <input type="text" size="30" name="tags" value="{{ tags }}" />
 <input type="checkbox" value="public" name="access" {% ifequal access "public" %}checked="checked"{% endifequal %} /> public?
 <input type="submit" value="Save"/>
