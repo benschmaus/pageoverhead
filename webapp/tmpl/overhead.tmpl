@@ -140,6 +140,24 @@ $(document).ready(function() {
     {% endfor %}
 
     $('#add-note').click(display_note);
+    $('#manage-collaborators').click(
+        function() {
+            var button = $(this);
+            var offset = button.offset();
+            $('<div>')
+                .append('<p>Enter email addressess of people you\'d like to collaborate with on this overhead.</p>')
+                .append($('<textarea></textarea>').height(150))
+                .dialog(
+                    {
+                        title: 'Collaborators',
+                        position: [ offset.left, offset.top ],
+                        width: 400,
+                        height: 300,
+                        buttons: { 'Save': function() { } }
+                    }
+                );
+        }
+    );
 });
 </script>
 </head>
@@ -155,6 +173,7 @@ tags <input type="text" size="30" name="tags" value="{{ tags }}" />
 <input type="submit" value="Save"/>
 </form>
 Go to <a href="http://{{ page }}">{{ page }}</a>
+
 </div>
 
 <iframe width="100%" height="100%" src="http://{{ page }}"
