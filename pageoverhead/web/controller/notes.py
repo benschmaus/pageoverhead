@@ -1,0 +1,51 @@
+import logging
+import cgi
+import os
+import urllib
+from google.appengine.ext import db
+from google.appengine.api import users
+from google.appengine.ext import webapp
+from google.appengine.ext.webapp import template
+from pageoverhead import auth
+from pageoverhead import model
+
+class NotesHandler(webapp.RequestHandler):
+    """ Handles adding notes for a particular user's bookmark """
+
+    # TODO ???Add param to decorator so we can check logged in user against user in request
+    @auth.AuthenticationDecorator
+    def get(self, user, page, note_id = None):
+        current_user = users.get_current_user()
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.out.write('GET "%s" "%s" "%s"' % (user, page, note_id))
+
+    # Note that if the user sends a POST but is logged out we need some workaround
+    # to handle the POST after the user logs in.
+    @auth.AuthenticationDecorator
+    def post(self, user, page, note_id = None):
+        """ Saves a new note or updates an existing one. """
+        current_user = users.get_current_user()
+        logging.info('Request to save note for user %s, page %s, note_id %s' % (user, page, note_id))
+        bookmark_note = None
+        if note_id:
+            note_id = note_id.strip()
+            bookmark_note = model.get({ "user =": current_user, "url =": page, "__key__ =": db.Key(note_id) }, model.BookmarkNote)
+            logging.info('Updating existing bookmark note %s' % bookmark_note)
+
+        if not bookmark_note:
+            logging.info('Creating new bookmark note')
+            bookmark_note = model.BookmarkNote()
+
+        bookmark_note.note = self.request.get('note_text')
+        bookmark_note.url = page
+        bookmark_note.top = self.request.get('note_top')
+        bookmark_note.left = self.request.get('note_left')
+        bookmark_note.width = self.request.get('note_width')
+        bookmark_note.height = self.request.get('note_height')
+
+        bookmark_note.put();
+
+        self.response.headers['Content-Type'] = 'application/json'
+        json = '{ "key": "%s" }' % bookmark_note.key()
+        self.response.out.write(json)
+

@@ -2,12 +2,16 @@ from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
 
-def get(user, url, entity_class):
-    query = entity_class.all().filter("user =", user).filter("url =", url)
+def get(filters, entity_class):
+    query = entity_class.all()
+    for filter_type, filter_value in filters.iteritems():
+        query.filter(filter_type, filter_value)
     return query.get()
 
-def fetch(user, url, entity_class):
-    query = entity_class.all().filter("user =", user).filter("url =", url)
+def fetch(filters, entity_class):
+    query = entity_class.all()
+    for filter_type, filter_value in filters.iteritems():
+        query.filter(filter_type, filter_value)
     return query
 
 class BaseEntity(db.Model):

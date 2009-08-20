@@ -10,13 +10,7 @@ handlers:
 - url: /js
   static_dir: webapp/static/js
 
-- url: /
-  script: webapp/controller/index.py
-
-- url: /([^/]+)/overheads/([^/]+)/notes.*
-  script: webapp/controller/notes.py
-
-- url: /([^/]+)/overheads/?([^/]*)
-  script: webapp/controller/overhead.py
+- url: /.*
+  script: webapp/router.py
 
 

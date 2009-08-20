@@ -46,13 +46,30 @@ $(document).ready(function() {
                         var height = note_dialog.height();
                         var width = note_dialog.width();
                         var text = note.children('textarea').get(0).value;
+                        var note_url = "/{{ user }}/overheads/{{ page }}/notes";
+                        var note_key_container = note.children('span');
+                        if (note_key_container.size() > 0) {
+                            note_url += '/' + note_key_container.get(0).innerText;
+                        }
+
+                        // for testing
                         //note.children('textarea').get(0).value = text + '\n' + oLeft + ' ' + oTop + '\n' + height + ' ' + width;
                         $.post(
-                            "/{{ user }}/overheads/{{ page }}/notes",
+                            note_url,
                             { note_text : text, note_height : height, note_width : width, note_left : oLeft, note_top : oTop},
                             function(data, textStatus) {
                                 if (textStatus == "success") {
+                                    // TODO ??? Use something safer that only converts JSON see http://www.json.org/js.html.
+                                    data = eval('(' + data + ')');
+
+                                    if (note_url.match('notes/?$') != null) {
+                                        var note_key = $('<span>' + data.key + '</span>');
+                                        note_key.hide();
+                                        note.append(note_key);
+                                    }
                                     alert('Note saved');
+                                } else {
+                                    alert('Note not saved: ' + textStatus);
                                 }
                             }
                         );
