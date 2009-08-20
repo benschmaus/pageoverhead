@@ -39,7 +39,7 @@ function display_note(note_data) {
             user: '{{ user }}',
             text: '',
             modified: displayable_update_time(),
-            height: 140,
+            height: 150,
             width: 240,
             left:  8,
             top: 100,
@@ -52,7 +52,7 @@ function display_note(note_data) {
     }
     note.dialog(
         {
-            title: note_data.user + ' on ' + note_data.modified,
+            title: note_data.user + '<br/>' + note_data.modified,
             width: note_data.width,
             height: note_data.height,
             buttons: { 'Save' : save_note },
@@ -64,7 +64,6 @@ function display_note(note_data) {
 
 // runs when note is closed. if previously saved it is deleted.
 function delete_note(e) {
-    alert(e.target);
     var note = $(e.target);
     var note_key_container = note.children('span');
     if (note_key_container.size() < 1) {
@@ -76,7 +75,8 @@ function delete_note(e) {
         { 'delete': 'true' },
         function(data, textStatus) {
             if (textStatus == "success") {
-                alert('Note deleted');
+                // Show something to the user?
+                //alert('Note deleted');
             } else {
                 alert('Note not saved: ' + textStatus);
             }
@@ -112,8 +112,8 @@ function save_note() {
                     note.append($('<span>' + data.key + '</span>').hide());
                 }
                 // Update notes title to include new update time
-                var title = note.dialog('option', 'title').split(' on ');
-                note.dialog('option', 'title', title[0] + ' on ' + displayable_update_time());
+                var title = note.dialog('option', 'title').split('<br/>');
+                note.dialog('option', 'title', title[0] + '<br/>' + displayable_update_time());
             } else {
                 alert('Note not saved: ' + textStatus);
             }
@@ -123,12 +123,11 @@ function save_note() {
 
 // TODO ??? Move some of this to external script
 $(document).ready(function() {
-
     // Add existing notes to the page. TODO ??? Move into another tmpl?
     {% for existing_bookmark_note in notes %}
     display_note({
         user: '{{ existing_bookmark_note.user }}',
-        text: '{{ existing_bookmark_note.note }}',
+        text: '{{ existing_bookmark_note.note_as_one_line|escape }}',
         created: '{{ existing_bookmark_note.created }}',
         modified: '{{ existing_bookmark_note.local_modified|date:"M d, fA T" }}',
         width: {{ existing_bookmark_note.width }},
@@ -141,8 +140,6 @@ $(document).ready(function() {
     {% endfor %}
 
     $('#add-note').click(display_note);
-
-    // Display existing notes
 });
 </script>
 </head>
@@ -162,6 +159,7 @@ Go to <a href="http://{{ page }}">{{ page }}</a>
 
 <iframe width="100%" height="100%" src="http://{{ page }}"
 border="0" noborder="noborder" frameborder="0" padding="0" spacing="0"></iframe>
+
 
 </body>
 </html>

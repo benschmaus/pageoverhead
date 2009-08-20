@@ -1,3 +1,4 @@
+import string
 import logging
 from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
@@ -34,6 +35,9 @@ class BookmarkNote(BaseEntity):
     left = db.StringProperty()
     width = db.StringProperty()
     height = db.StringProperty()
+
+    def note_as_one_line(self):
+        return string.replace(self.note, '\n', '\\n')
 
 class BookmarkTag(BaseEntity):
     tag = db.StringProperty()

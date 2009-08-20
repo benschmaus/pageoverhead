@@ -2,11 +2,13 @@ body {
     margin: 0;
     padding: 0;
     font-size: 1em;
+    overflow: hidden;
 }
 #menu-bar {
     padding: 10px 0 10px 8px;
     /*background: #33A6CF;*/
     background: #4AA5EF;
+    border-bottom: 3px solid #000;
 }
 form {
     display: inline;
@@ -15,6 +17,7 @@ form {
 }
 textarea {
     width: 100%;
-    height: 99%;
+    height: 98%;
+    /*border: 0;*/
 }
 
