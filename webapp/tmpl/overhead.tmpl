@@ -16,69 +16,97 @@
 function zero_pad(s) {
     return s < 10 ? "0" + s : s;
 }
-// TODO Move some of this to external script (eg, add note function)?
-$(document).ready(function() {
 
-    $('#add-note').click(
-        // Make an id for this note then add it to the DOM
-        function() {
-            var today = new Date();
-            var h = zero_pad(today.getHours());
-            var m = zero_pad(today.getMinutes());
-            var s = zero_pad(today.getSeconds());
-            var d = zero_pad(today.getDate());
-            var mn = zero_pad(today.getMonth()+1);
+function display_note(note_data) {
 
-            var noteId = '{{ user }}' + "-" + today.getTime();
-            var note = $('<div class="Note" id="' + noteId + '"><textarea></textarea></div>');
-            note.dialog(
-                {
-                    title: '{{ user }} at ' + h + ':' + m + ':' + s + ', ' + mn + '/' + d,
-                    width: 240,
-                    height: 198,
-                    buttons: { 'Save' : function() {
-                        // Make ajax call to save the note
-                        var note = $(this);
-                        var note_dialog = note.parent();
-                        var offset = note_dialog.offset();
-                        var oLeft = offset.left;
-                        var oTop = offset.top;
-                        var height = note_dialog.height();
-                        var width = note_dialog.width();
-                        var text = note.children('textarea').get(0).value;
-                        var note_url = "/{{ user }}/overheads/{{ page }}/notes";
-                        var note_key_container = note.children('span');
-                        if (note_key_container.size() > 0) {
-                            note_url += '/' + note_key_container.get(0).innerText;
-                        }
-
-                        // for testing
-                        //note.children('textarea').get(0).value = text + '\n' + oLeft + ' ' + oTop + '\n' + height + ' ' + width;
-                        $.post(
-                            note_url,
-                            { note_text : text, note_height : height, note_width : width, note_left : oLeft, note_top : oTop},
-                            function(data, textStatus) {
-                                if (textStatus == "success") {
-                                    // TODO ??? Use something safer that only converts JSON see http://www.json.org/js.html.
-                                    data = eval('(' + data + ')');
-
-                                    if (note_url.match('notes/?$') != null) {
-                                        var note_key = $('<span>' + data.key + '</span>');
-                                        note_key.hide();
-                                        note.append(note_key);
-                                    }
-                                    alert('Note saved');
-                                } else {
-                                    alert('Note not saved: ' + textStatus);
-                                }
-                            }
-                        );
-                    }},
-                    position: [8, 100] // default left, top position for new note
-                }
-            );
+    if (note_data.type != 'note') {
+        var today = new Date();
+        var h = zero_pad(today.getHours());
+        var m = zero_pad(today.getMinutes());
+        var s = zero_pad(today.getSeconds());
+        var d = zero_pad(today.getDate());
+        var mn = zero_pad(today.getMonth()+1);
+        // Default note when adding a new one
+        note_data = {
+            created: today.getTime(),
+            text: '',
+            modified: today,
+            height: 140,
+            width: 240,
+            left:  8,
+            top: 100,
+            key: null
+        };
+    }
+    var note = $('<div class="Note">').append($('<textarea></textarea>').append(note_data.text));
+    if (note_data.key != null) {
+        note.append($('<span>' + note_data.key + '</span>').hide());
+    }
+    note.dialog(
+        {
+            title: '{{ user }} at ' + note_data.modified,
+            width: note_data.width,
+            height: note_data.height,
+            buttons: { 'Save' : save_note },
+            position: [ note_data.left, note_data.top ]
         }
     );
+}
+
+function save_note() {
+    // Make ajax call to save the note
+    var note = $(this);
+    var note_dialog = note.parent();
+    var offset = note_dialog.offset();
+    var oLeft = offset.left;
+    var oTop = offset.top;
+    var height = note_dialog.height();
+    var width = note_dialog.width();
+    var text = note.children('textarea').get(0).value;
+    var note_url = "/{{ user }}/overheads/{{ page }}/notes";
+    var note_key_container = note.children('span');
+    if (note_key_container.size() > 0) {
+        note_url += '/' + note_key_container.get(0).innerText;
+    }
+    // for testing
+    //note.children('textarea').get(0).value = text + '\n' + oLeft + ' ' + oTop + '\n' + height + ' ' + width;
+    $.post(
+        note_url,
+        { note_text : text, note_height : height, note_width : width, note_left : oLeft, note_top : oTop},
+        function(data, textStatus) {
+            if (textStatus == "success") {
+                // TODO ??? Use something safer that only converts JSON see http://www.json.org/js.html.
+                data = eval('(' + data + ')');
+                if (note_url.match('notes/?$') != null) {
+                    note.append($('<span>' + data.key + '</span>').hide());
+                }
+                alert('Note saved');
+            } else {
+                alert('Note not saved: ' + textStatus);
+            }
+        }
+    );
+}
+
+// TODO ??? Move some of this to external script
+$(document).ready(function() {
+
+    // Add existing notes to the page. TODO ??? Move into another tmpl?
+    {% for existing_bookmark_note in notes %}
+    display_note({
+        text: '{{ existing_bookmark_note.note }}',
+        created: '{{ existing_bookmark_note.created }}',
+        modified: '{{ existing_bookmark_note.modified }}',
+        width: {{ existing_bookmark_note.width }},
+        height: {{ existing_bookmark_note.height }},
+        top: {{ existing_bookmark_note.top }},
+        left: {{ existing_bookmark_note.left }},
+        key: '{{ existing_bookmark_note.key }}',
+        type: 'note'
+    });
+    {% endfor %}
+
+    $('#add-note').click(display_note);
 
     // Display existing notes
 });

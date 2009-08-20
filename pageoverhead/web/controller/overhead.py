@@ -1,3 +1,4 @@
+import logging
 import cgi
 import os
 import urllib
@@ -11,11 +12,18 @@ class OverheadHandler(webapp.RequestHandler):
 
     # TODO ???Add param to decorator so we can check logged in user against user in request
     @auth.AuthenticationDecorator
-    def get(self, user, page):
-        current_user = users.get_current_user()
+    def get(self, request_user, page):
+        request_user = urllib.unquote_plus(request_user)
+        page = urllib.unquote_plus(page)
 
-        bookmark = model.get({"user =": current_user, "url =": page}, model.Bookmark)
-        bookmark_tags = model.fetch({"user =": current_user, "url =": page}, model.BookmarkTag)
+        current_user = users.get_current_user()
+        logging.debug('getting overhead user: %s, page: %s for %s' % (request_user, page, current_user))
+        bookmark = model.get({"user =": users.User(request_user), "url =": page}, model.Bookmark)
+        bookmark_tags = model.fetch({"user =": users.User(request_user), "url =": page}, model.BookmarkTag)
+        # TODO Get notes for the user associated with the request and all other collaborators
+        bookmark_notes = model.fetch({"user =": users.User(request_user), "url =": page}, model.BookmarkNote)
+        logging.debug('fetched %d bookmark notes', bookmark_notes.count())
+
         access = ""
         tags_str = ""
 
@@ -28,10 +36,11 @@ class OverheadHandler(webapp.RequestHandler):
             tags_str = ' '.join(bookmark_tags)
 
         tmpl_vars = {
-            "user": urllib.unquote_plus(user),
+            "user": request_user,
             "page": page,
             "access": access,
-            "tags": tags_str
+            "tags": tags_str,
+            "notes": bookmark_notes
         }
 
         self.response.headers['Content-Type'] = 'text/html'
@@ -40,8 +49,11 @@ class OverheadHandler(webapp.RequestHandler):
     # Note that if the user sends a POST but is logged out we need some workaround
     # to handle the POST after the user logs in.
     @auth.AuthenticationDecorator
-    def post(self, user, page):
+    def post(self, request_user, page):
         """ Saves a bookmark. """
+        request_user = urllib.unquote_plus(request_user)
+        page = urllib.unquote_plus(page)
+        current_user = users.get_current_user()
 
         tags_str = self.request.get('tags')
         tags = tags_str.split()
@@ -52,17 +64,18 @@ class OverheadHandler(webapp.RequestHandler):
 
         self.update_bookmark(page, tags, access)
 
+        bookmark_notes = model.fetch({"user =": current_user, "url =": page}, model.BookmarkNote)
+
         tmpl_vars = {
-            "user": urllib.unquote_plus(user),
+            "user": request_user,
             "page": page,
             "tags": tags_str,
-            "access": access
+            "access": access,
+            "notes": ()
         }
 
-        path = os.path.join(os.path.dirname(__file__), '../tmpl/overhead.tmpl')
-
         self.response.headers['Content-Type'] = 'text/html'
-        self.response.out.write(template.render(path, tmpl_vars))
+        self.response.out.write(template.render('tmpl/overhead.tmpl', tmpl_vars))
 
     def update_bookmark(self, page, tags, access):
         current_user = users.get_current_user()
