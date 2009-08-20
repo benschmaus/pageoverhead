@@ -20,9 +20,8 @@ class OverheadHandler(webapp.RequestHandler):
         logging.debug('getting overhead user: %s, page: %s for %s' % (request_user, page, current_user))
         bookmark = model.get({"user =": users.User(request_user), "url =": page}, model.Bookmark)
         bookmark_tags = model.fetch({"user =": users.User(request_user), "url =": page}, model.BookmarkTag)
-        # TODO Get notes for the user associated with the request and all other collaborators
-        bookmark_notes = model.fetch({"user =": users.User(request_user), "url =": page}, model.BookmarkNote)
-        logging.debug('fetched %d bookmark notes', bookmark_notes.count())
+
+        bookmark_notes = self.get_bookmark_notes(request_user, current_user, page)
 
         access = ""
         tags_str = ""
@@ -65,14 +64,15 @@ class OverheadHandler(webapp.RequestHandler):
 
         self.update_bookmark(page, tags, access)
 
-        bookmark_notes = model.fetch({"user =": current_user, "url =": page}, model.BookmarkNote)
+        bookmark_notes = self.get_bookmark_notes(request_user, current_user, page)
 
         tmpl_vars = {
+            "logged_in_user": current_user.email(),
             "user": request_user,
             "page": page,
             "tags": tags_str,
             "access": access,
-            "notes": ()
+            "notes": bookmark_notes
         }
 
         self.response.headers['Content-Type'] = 'text/html'
@@ -108,4 +108,8 @@ class OverheadHandler(webapp.RequestHandler):
             bookmark_tag.tag = tag
             bookmark_tag.put()
 
-
+    def get_bookmark_notes(self, request_user, current_user, page):
+        # TODO Get notes for the user associated with the request and all other collaborators
+        bookmark_notes = model.fetch({"user =": users.User(request_user), "url =": page}, model.BookmarkNote)
+        logging.debug('fetched %d bookmark notes', bookmark_notes.count())
+        return bookmark_notes
