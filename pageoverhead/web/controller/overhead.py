@@ -36,6 +36,7 @@ class OverheadHandler(webapp.RequestHandler):
             tags_str = ' '.join(bookmark_tags)
 
         tmpl_vars = {
+            "logged_in_user": current_user.email(),
             "user": request_user,
             "page": page,
             "access": access,
@@ -50,7 +51,7 @@ class OverheadHandler(webapp.RequestHandler):
     # to handle the POST after the user logs in.
     @auth.AuthenticationDecorator
     def post(self, request_user, page):
-        """ Saves a bookmark. """
+        """ Saves or deletes a bookmark. """
         request_user = urllib.unquote_plus(request_user)
         page = urllib.unquote_plus(page)
         current_user = users.get_current_user()

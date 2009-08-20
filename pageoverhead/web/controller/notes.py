@@ -23,9 +23,10 @@ class NotesHandler(webapp.RequestHandler):
     # to handle the POST after the user logs in.
     @auth.AuthenticationDecorator
     def post(self, user, page, note_id = None):
-        """ Saves a new note or updates an existing one. """
+        """ Saves a new note, updates or deletes an existing one. """
         current_user = users.get_current_user()
-        logging.info('Request to save note for user %s, page %s, note_id %s' % (user, page, note_id))
+        logging.info('Request to modify note for user %s, page %s, note_id %s' % (user, page, note_id))
+
         bookmark_note = None
         if note_id:
             note_id = note_id.strip()
@@ -36,16 +37,22 @@ class NotesHandler(webapp.RequestHandler):
             logging.info('Creating new bookmark note')
             bookmark_note = model.BookmarkNote()
 
-        bookmark_note.note = self.request.get('note_text')
-        bookmark_note.url = page
-        bookmark_note.top = self.request.get('note_top')
-        bookmark_note.left = self.request.get('note_left')
-        bookmark_note.width = self.request.get('note_width')
-        bookmark_note.height = self.request.get('note_height')
-
-        bookmark_note.put();
+        json = None
+        if self.request.get('delete'):
+            logging.debug('Deleting bookmark note')
+            json = '{ "key": "%s" }' % bookmark_note.key()
+            bookmark_note.delete()
+        else:
+            logging.debug('Saving bookmark note')
+            bookmark_note.note = self.request.get('note_text')
+            bookmark_note.url = page
+            bookmark_note.top = self.request.get('note_top')
+            bookmark_note.left = self.request.get('note_left')
+            bookmark_note.width = self.request.get('note_width')
+            bookmark_note.height = self.request.get('note_height')
+            bookmark_note.put()
+            json = '{ "key": "%s" }' % bookmark_note.key()
 
         self.response.headers['Content-Type'] = 'application/json'
-        json = '{ "key": "%s" }' % bookmark_note.key()
         self.response.out.write(json)
 

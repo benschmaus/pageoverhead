@@ -13,24 +13,32 @@
 <script src="/js/ui.resizable.js" type="text/javascript"></script>
 <script src="/js/ui.dialog.js" type="text/javascript"></script>
 <script type="text/javascript">
+var months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+];
+
 function zero_pad(s) {
     return s < 10 ? "0" + s : s;
+}
+
+function displayable_update_time() {
+    var today = new Date();
+    var d = zero_pad(today.getDate());
+    var h = today.getHours();
+    var m = zero_pad(today.getMinutes());
+    var tz = today.getTimezoneOffset() > 240 ? 'EST' : 'EDT';
+    var ampm = h < 12 ? 'AM' : 'PM';
+    return months[today.getMonth()] + " " + d + ", " + h % 12 + ":" + m + " " + ampm + ' ' + tz;
 }
 
 function display_note(note_data) {
 
     if (note_data.type != 'note') {
-        var today = new Date();
-        var h = zero_pad(today.getHours());
-        var m = zero_pad(today.getMinutes());
-        var s = zero_pad(today.getSeconds());
-        var d = zero_pad(today.getDate());
-        var mn = zero_pad(today.getMonth()+1);
         // Default note when adding a new one
         note_data = {
-            created: today.getTime(),
+            user: '{{ user }}',
             text: '',
-            modified: today,
+            modified: displayable_update_time(),
             height: 140,
             width: 240,
             left:  8,
@@ -44,11 +52,34 @@ function display_note(note_data) {
     }
     note.dialog(
         {
-            title: '{{ user }} at ' + note_data.modified,
+            title: note_data.user + ' on ' + note_data.modified,
             width: note_data.width,
             height: note_data.height,
             buttons: { 'Save' : save_note },
+            close: delete_note,
             position: [ note_data.left, note_data.top ]
+        }
+    );
+}
+
+// runs when note is closed. if previously saved it is deleted.
+function delete_note(e) {
+    alert(e.target);
+    var note = $(e.target);
+    var note_key_container = note.children('span');
+    if (note_key_container.size() < 1) {
+        return; // note hasn't been saved so just close it
+    }
+    var note_url = "/{{ user }}/overheads/{{ page }}/notes/" + note_key_container.get(0).innerText;
+    $.post(
+        note_url,
+        { 'delete': 'true' },
+        function(data, textStatus) {
+            if (textStatus == "success") {
+                alert('Note deleted');
+            } else {
+                alert('Note not saved: ' + textStatus);
+            }
         }
     );
 }
@@ -80,7 +111,9 @@ function save_note() {
                 if (note_url.match('notes/?$') != null) {
                     note.append($('<span>' + data.key + '</span>').hide());
                 }
-                alert('Note saved');
+                // Update notes title to include new update time
+                var title = note.dialog('option', 'title').split(' on ');
+                note.dialog('option', 'title', title[0] + ' on ' + displayable_update_time());
             } else {
                 alert('Note not saved: ' + textStatus);
             }
@@ -94,6 +127,7 @@ $(document).ready(function() {
     // Add existing notes to the page. TODO ??? Move into another tmpl?
     {% for existing_bookmark_note in notes %}
     display_note({
+        user: '{{ existing_bookmark_note.user }}',
         text: '{{ existing_bookmark_note.note }}',
         created: '{{ existing_bookmark_note.created }}',
         modified: '{{ existing_bookmark_note.local_modified|date:"M d, fA T" }}',
