@@ -96,7 +96,7 @@ $(document).ready(function() {
     display_note({
         text: '{{ existing_bookmark_note.note }}',
         created: '{{ existing_bookmark_note.created }}',
-        modified: '{{ existing_bookmark_note.modified }}',
+        modified: '{{ existing_bookmark_note.local_modified|date:"M d, fA T" }}',
         width: {{ existing_bookmark_note.width }},
         height: {{ existing_bookmark_note.height }},
         top: {{ existing_bookmark_note.top }},

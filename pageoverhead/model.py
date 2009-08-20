@@ -1,6 +1,7 @@
+import logging
 from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
-
+from pageoverhead import util
 
 def get(filters, entity_class):
     query = entity_class.all()
@@ -19,6 +20,9 @@ class BaseEntity(db.Model):
     modified = db.DateTimeProperty(auto_now=True)
     user = db.UserProperty(auto_current_user_add=True)
     url = db.StringProperty()
+
+    def local_modified(self):
+        return self.modified.replace(tzinfo=util.UTC_tzinfo()).astimezone(util.Eastern_tzinfo())
 
 class Bookmark(BaseEntity):
     access = db.StringProperty(choices=set(['private','public']))
@@ -40,4 +44,5 @@ class BookmarkCollaborator(BaseEntity):
 class BookmarkLink(BaseEntity):
     """Link someone elses public notes to one of your bookmarks"""
     pass
+
 
