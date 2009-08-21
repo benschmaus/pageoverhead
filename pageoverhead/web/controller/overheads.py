@@ -46,7 +46,8 @@ class OverheadHandler(webapp.RequestHandler):
             "access": access,
             "tags": tags_str,
             "collaborators": collaborators_str,
-            "notes": bookmark_notes
+            "notes": bookmark_notes,
+            "logout_url" : users.create_logout_url('/')
         }
 
         self.response.headers['Content-Type'] = 'text/html'
@@ -78,7 +79,8 @@ class OverheadHandler(webapp.RequestHandler):
             "page": page,
             "tags": tags_str,
             "access": access,
-            "notes": bookmark_notes
+            "notes": bookmark_notes,
+            "logout_url" : users.create_logout_url('/')
         }
 
         self.response.headers['Content-Type'] = 'text/html'

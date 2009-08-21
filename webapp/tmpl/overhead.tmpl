@@ -185,7 +185,7 @@ $(document).ready(function() {
 <body>
 
 <div id="menu-bar">
-{{ user }}
+<div id='controls'>
 <form method="post" action="/{{ user }}/overheads/{{ page|urlencode }}">
 <input id="add-note" type="button" value="Add Note"/>
 <input id="manage-collaborators" type="button" value="Manage Collaborators"/>
@@ -194,8 +194,16 @@ tags <input type="text" size="30" name="tags" value="{{ tags }}" />
 <input type="submit" value="Save"/>
 </form>
 Go to <a href="http://{{ page }}">{{ page }}</a>
-
 </div>
+
+<div id='user'>
+{{ logged_in_user }} | <a href="{{logout_url}}">logout</a>
+</div>
+
+<div style="clear:both"></div>
+</div>
+
+<div style="clear:both">&nbsp;</div>
 
 <iframe width="100%" height="100%" src="http://{{ page }}"
 border="0" noborder="noborder" frameborder="0" padding="0" spacing="0"></iframe>

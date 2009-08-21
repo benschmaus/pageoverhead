@@ -7,10 +7,21 @@ body {
 #menu-bar {
     padding: 10px 0 10px 8px;
     /*background: #33A6CF;*/
-    background: #4AA5EF;
+    /*background: #4AA5EF;*/
+    background: #eee;
     border-bottom: 3px solid #000;
 }
+#controls {
+    float:left;
+}
+#user {
+    float:right;
+    padding-top: 0px;
+    margin-right: 8px;
+}
 form {
+    margin:0px;
+    padding:0px;
     display: inline;
 }
 .Note {

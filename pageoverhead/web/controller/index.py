@@ -20,7 +20,7 @@ class IndexHandler(webapp.RequestHandler):
             "user_email" : email,
             "user_nickname" : nickname,
             "login_url" : users.create_login_url(self.request.uri),
-            "logout_url" : users.create_logout_url(self.request.uri)
+            "logout_url" : users.create_logout_url('/')
         }
 
         self.response.headers['Content-Type'] = 'text/html'
