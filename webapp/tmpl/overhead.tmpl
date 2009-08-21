@@ -51,7 +51,8 @@ function displayable_update_time() {
     var m = zero_pad(today.getMinutes());
     var tz = today.getTimezoneOffset() > 240 ? 'EST' : 'EDT';
     var ampm = h < 12 ? 'AM' : 'PM';
-    return months[today.getMonth()] + " " + d + ", " + h % 12 + ":" + m + " " + ampm + ' ' + tz;
+    var hr12 = h % 12;
+    return months[today.getMonth()] + " " + d + ", " + (hr12 == 0 ? 12 : hr12) + ":" + m + " " + ampm + ' ' + tz;
 }
 
 function display_note(note_data) {
@@ -70,7 +71,7 @@ function display_note(note_data) {
             is_unsaved: function() { return this.key.search(/^\d+$/) != -1;  }
         };
     }
-    var note = $('<div class="Note">').append($('<textarea></textarea>').append(note_data.text));
+    var note = $('<div class="Note">');
     if (note_data.key == null) {
         // New, unsaved note
         var temp_id = ''+new Date().getTime();
@@ -93,8 +94,13 @@ function display_note(note_data) {
     );
     // Only note creators can edit or delete notes
     if (note_data.user == logged_in_user) {
+        note.append($('<textarea></textarea>').append(note_data.text));
         note.dialog('option', 'buttons', { 'Save' : save_note });
         note.bind('dialogclose', delete_note);
+    } else {
+        // Remove x when a dialog that isn't ours is opened
+        note.bind('dialogopen', function() { $(this).parents(".ui-dialog:first").find(".ui-dialog-titlebar-close").remove(); });
+        note.append($('<textarea></textarea>').attr('disabled', 'disabled').css('border', '0').css('background', '#fff').append(note_data.text));
     }
     note.dialog('open');
 }
@@ -222,8 +228,14 @@ function note_poller() {
                         // update text and title of possibly updated notes that aren't ours
                         var note_data = notes[note_key];
                         if (note_data.user != logged_in_user) {
-                            note_data.note_div.dialog('option', 'title', note_data.user + '<br/>' + data[note_key].modified);
-                            note_data.note_div.children('textarea').get(0).value = data[note_key].text;
+                            if (data[note_key].modified != note_data.modified) {
+                                var new_note_data = data[note_key];
+                                note_data.note_div.dialog('option', 'title', note_data.user + '<br/>' + new_note_data.modified);
+                                note_data.note_div.dialog('option', 'position', [ new_note_data.left, new_note_data.top ]);
+                                note_data.note_div.dialog('option', 'height', new_note_data.height);
+                                note_data.note_div.dialog('option', 'width', new_note_data.width);
+                                note_data.note_div.children('textarea').get(0).value = new_note_data.text;
+                            }
                         }
                     }
                 }
