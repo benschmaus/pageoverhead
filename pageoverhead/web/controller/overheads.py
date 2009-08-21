@@ -22,7 +22,7 @@ class OverheadHandler(webapp.RequestHandler):
         bookmark = model.get({"user =": users.User(request_user), "url =": page}, model.Bookmark)
         bookmark_tags = model.fetch({"user =": users.User(request_user), "url =": page}, model.BookmarkTag)
         bookmark_collaborators = model.fetch({"user =": users.User(request_user), "url =": page}, model.BookmarkCollaborator)
-        bookmark_notes = self.get_bookmark_notes(request_user, current_user, page)
+        bookmark_notes = self.get_bookmark_notes(request_user, page)
 
         access = ""
         tags_str = ""
@@ -71,7 +71,7 @@ class OverheadHandler(webapp.RequestHandler):
 
         self.update_bookmark(page, tags, access)
 
-        bookmark_notes = self.get_bookmark_notes(request_user, current_user, page)
+        bookmark_notes = self.get_bookmark_notes(request_user, page)
 
         tmpl_vars = {
             "logged_in_user": current_user.email(),
@@ -116,8 +116,8 @@ class OverheadHandler(webapp.RequestHandler):
             bookmark_tag.tag = tag
             bookmark_tag.put()
 
-    def get_bookmark_notes(self, request_user, current_user, page):
+    def get_bookmark_notes(self, request_user, page):
         # TODO Get notes for the user associated with the request and all other collaborators
-        bookmark_notes = model.fetch({"user =": users.User(request_user), "url =": page}, model.BookmarkNote)
+        bookmark_notes = model.fetch({"owner =": users.User(request_user), "url =": page}, model.BookmarkNote)
         logging.debug('fetched %d bookmark notes', bookmark_notes.count())
         return bookmark_notes

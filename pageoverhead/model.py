@@ -29,7 +29,7 @@ class Bookmark(BaseEntity):
     access = db.StringProperty(choices=set(['private','public']))
 
 class BookmarkNote(BaseEntity):
-    author = db.UserProperty(auto_current_user_add=True)
+    owner = db.UserProperty()
     note = db.StringProperty(multiline=True)
     top = db.StringProperty()
     left = db.StringProperty()

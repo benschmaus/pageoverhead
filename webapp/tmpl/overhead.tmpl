@@ -13,6 +13,28 @@
 <script src="/js/ui.resizable.js" type="text/javascript"></script>
 <script src="/js/ui.dialog.js" type="text/javascript"></script>
 <script type="text/javascript">
+// Do something better than this for determinging logged in user...
+var logged_in_user = '{{ logged_in_user }}';
+
+var collaborators = '{{collaborators}}';
+
+var notes = {};
+// Data structure for existing notes
+{% for existing_bookmark_note in notes %}
+notes['{{ existing_bookmark_note.key }}'] = {
+    user: '{{ existing_bookmark_note.user }}',
+    text: '{{ existing_bookmark_note.note_as_one_line|escape }}',
+    created: '{{ existing_bookmark_note.created }}',
+    modified: '{{ existing_bookmark_note.local_modified|date:"M d, fA T" }}',
+    width: {{ existing_bookmark_note.width }},
+    height: {{ existing_bookmark_note.height }},
+    top: {{ existing_bookmark_note.top }},
+    left: {{ existing_bookmark_note.left }},
+    key: '{{ existing_bookmark_note.key }}',
+    type: 'note'
+};
+{% endfor %}
+
 var months = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 ];
@@ -60,14 +82,19 @@ function display_note(note_data) {
 
     note.dialog(
         {
+            autoOpen: false,
             title: note_data.user + '<br/>' + note_data.modified,
             width: note_data.width,
             height: note_data.height,
-            buttons: { 'Save' : save_note },
-            close: delete_note,
             position: [ note_data.left, note_data.top ]
         }
     );
+    // Only note creators can edit or delete notes
+    if (note_data.user == logged_in_user) {
+        note.dialog('option', 'buttons', { 'Save' : save_note });
+        note.bind('dialogclose', delete_note);
+    }
+    note.dialog('open');
 }
 
 // runs when note is closed. if previously saved it is deleted.
@@ -156,25 +183,6 @@ function save_collaborators() {
         }
     );
 }
-
-var collaborators = '{{collaborators}}';
-
-var notes = {};
-// Data structure for existing notes
-{% for existing_bookmark_note in notes %}
-notes['{{ existing_bookmark_note.key }}'] = {
-    user: '{{ existing_bookmark_note.author }}',
-    text: '{{ existing_bookmark_note.note_as_one_line|escape }}',
-    created: '{{ existing_bookmark_note.created }}',
-    modified: '{{ existing_bookmark_note.local_modified|date:"M d, fA T" }}',
-    width: {{ existing_bookmark_note.width }},
-    height: {{ existing_bookmark_note.height }},
-    top: {{ existing_bookmark_note.top }},
-    left: {{ existing_bookmark_note.left }},
-    key: '{{ existing_bookmark_note.key }}',
-    type: 'note'
-};
-{% endfor %}
 
 // TODO ??? Move some of this to external script
 $(document).ready(function() {
