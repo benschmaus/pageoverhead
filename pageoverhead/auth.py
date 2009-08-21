@@ -1,3 +1,4 @@
+import logging
 from google.appengine.api import users
 
 class AuthenticationDecorator(object):
@@ -8,8 +9,10 @@ class AuthenticationDecorator(object):
 
     def __call__(self, *args):
         user = users.get_current_user()
+        logging.info('auth check for %s, user %s' % (self.wrapped_handler.request.uri, user))
         if user == None:
-             self.wrapped_handler.redirect(users.create_login_url(self.wrapped_handler.request.uri))
+            self.wrapped_handler.redirect(users.create_login_url(self.wrapped_handler.request.uri))
+            return
 
         self.wrapped_function(self.wrapped_handler, *args)
 
