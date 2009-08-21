@@ -18,21 +18,26 @@ class OverheadHandler(webapp.RequestHandler):
 
         current_user = users.get_current_user()
         logging.debug('getting overhead user: %s, page: %s for %s' % (request_user, page, current_user))
+
         bookmark = model.get({"user =": users.User(request_user), "url =": page}, model.Bookmark)
         bookmark_tags = model.fetch({"user =": users.User(request_user), "url =": page}, model.BookmarkTag)
-
+        bookmark_collaborators = model.fetch({"user =": users.User(request_user), "url =": page}, model.BookmarkCollaborator)
         bookmark_notes = self.get_bookmark_notes(request_user, current_user, page)
 
         access = ""
         tags_str = ""
+        collaborators_str = ""
 
         if bookmark:
             access = bookmark.access
 
         if bookmark_tags:
-            def f(x): return x.tag
-            bookmark_tags = map(f, bookmark_tags)
+            bookmark_tags = map(lambda x: x.tag, bookmark_tags)
             tags_str = ' '.join(bookmark_tags)
+
+        if bookmark_collaborators:
+            bookmark_collaborators = map(lambda x: str(x.collaborator), bookmark_collaborators)
+            collaborators_str = '\\n'.join(bookmark_collaborators)
 
         tmpl_vars = {
             "logged_in_user": current_user.email(),
@@ -40,6 +45,7 @@ class OverheadHandler(webapp.RequestHandler):
             "page": page,
             "access": access,
             "tags": tags_str,
+            "collaborators": collaborators_str,
             "notes": bookmark_notes
         }
 

@@ -9,7 +9,7 @@ from google.appengine.ext.webapp import template
 from pageoverhead import auth
 from pageoverhead import model
 
-class NotesHandler(webapp.RequestHandler):
+class NoteHandler(webapp.RequestHandler):
     """ Handles adding notes for a particular user's bookmark """
 
     # TODO ???Add param to decorator so we can check logged in user against user in request

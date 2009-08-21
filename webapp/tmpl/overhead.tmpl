@@ -121,6 +121,27 @@ function save_note() {
     );
 }
 
+function save_collaborators() {
+    var collaborator_div = $(this);
+    var text = collaborator_div.children('textarea').get(0).value;
+    collaborators = text;
+    var post_url = "/{{ user }}/overheads/{{ page }}/collaborators";
+    $.post(
+        post_url,
+        { collaborators: text },
+        function(data, textStatus) {
+            if (textStatus == 'success') {
+                // TODO Show the user that something actually happened
+                data = eval('(' + data + ')');
+            } else {
+                alert('Collaborators not saved: ' + textStatus);
+            }
+        }
+    );
+}
+
+var collaborators = '{{collaborators}}';
+
 // TODO ??? Move some of this to external script
 $(document).ready(function() {
     // Add existing notes to the page. TODO ??? Move into another tmpl?
@@ -146,14 +167,14 @@ $(document).ready(function() {
             var offset = button.offset();
             $('<div>')
                 .append('<p>Enter email addressess of people you\'d like to collaborate with on this overhead.</p>')
-                .append($('<textarea></textarea>').height(150))
+                .append($('<textarea></textarea>').text(collaborators).height(150))
                 .dialog(
                     {
                         title: 'Collaborators',
                         position: [ offset.left, offset.top ],
                         width: 400,
                         height: 300,
-                        buttons: { 'Save': function() { } }
+                        buttons: { 'Save': save_collaborators }
                     }
                 );
         }

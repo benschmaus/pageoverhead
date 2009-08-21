@@ -43,8 +43,8 @@ class BookmarkTag(BaseEntity):
     tag = db.StringProperty()
 
 class BookmarkCollaborator(BaseEntity):
-    """Enable a boorkmark to be viewed by specific collaborators"""
-    pass
+    """ A collaborator can read and edit notes on an overhead """
+    collaborator = db.UserProperty()
 
 class BookmarkLink(BaseEntity):
     """Link someone elses public notes to one of your bookmarks"""
