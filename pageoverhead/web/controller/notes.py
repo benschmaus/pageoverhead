@@ -16,8 +16,14 @@ class NoteHandler(webapp.RequestHandler):
     @auth.AuthenticationDecorator
     def get(self, user, page, note_id = None):
         current_user = users.get_current_user()
-        self.response.headers['Content-Type'] = 'text/plain'
-        self.response.out.write('GET "%s" "%s" "%s"' % (user, page, note_id))
+        user = urllib.unquote_plus(user)
+        bookmark_notes = model.fetch({"owner =": users.User(user), "url =": page}, model.BookmarkNote)
+
+        tmpl_vars = {
+            "notes": bookmark_notes
+        }
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.out.write(template.render('tmpl/notes_json.tmpl', tmpl_vars))
 
     # Note that if the user sends a POST but is logged out we need some workaround
     # to handle the POST after the user logs in.

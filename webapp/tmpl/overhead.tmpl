@@ -31,7 +31,8 @@ notes['{{ existing_bookmark_note.key }}'] = {
     top: {{ existing_bookmark_note.top }},
     left: {{ existing_bookmark_note.left }},
     key: '{{ existing_bookmark_note.key }}',
-    type: 'note'
+    type: 'note',
+    is_unsaved: function() { return this.key.search(/^\d+$/) != -1;  }
 };
 {% endfor %}
 
@@ -65,7 +66,8 @@ function display_note(note_data) {
             width: 240,
             left:  8,
             top: 100,
-            key: null
+            key: null,
+            is_unsaved: function() { return this.key.search(/^\d+$/) != -1;  }
         };
     }
     var note = $('<div class="Note">').append($('<textarea></textarea>').append(note_data.text));
@@ -184,10 +186,56 @@ function save_collaborators() {
     );
 }
 
+function remove_note(note_data) {
+    var note = note_data.note_div;
+    note.dialog('destroy');
+    note.remove();
+    delete notes[note_data.key];
+}
+
+function add_note(note_data) {
+    display_note(note_data);
+    notes[note_data.key] = note_data;
+}
+
+function note_poller() {
+    $.get(
+        '/{{ user }}/overheads/{{ page }}/notes',
+        {},
+        function(data, textStatus) {
+            if (textStatus == 'success') {
+                // deletions
+                for (var note_key in notes) {
+                    if (data[note_key] == undefined) {
+                        // Don't remove notes that haven't been saved
+                        var note_data = notes[note_key];
+                        if (!note_data.is_unsaved()) {
+                            remove_note(note_data);
+                        }
+                    }
+                }
+                // additions/updates
+                for (var note_key in data) {
+                    if (notes[note_key] == undefined) {
+                        add_note(data[note_key]);
+                    } else {
+                        // update text and title of possibly updated notes that aren't ours
+                        var note_data = notes[note_key];
+                        if (note_data.user != logged_in_user) {
+                            note_data.note_div.dialog('option', 'title', note_data.user + '<br/>' + data[note_key].modified);
+                            note_data.note_div.children('textarea').get(0).value = data[note_key].text;
+                        }
+                    }
+                }
+            } // else try next time
+       },
+       'json'
+    );
+}
 // TODO ??? Move some of this to external script
 $(document).ready(function() {
 
-    for (note_key in notes) {
+    for (var note_key in notes) {
         display_note(notes[note_key]);
     }
 
@@ -210,6 +258,10 @@ $(document).ready(function() {
                 );
         }
     );
+
+    // poll server looking for note adds/removals.
+    // DOM is updated accordingly.
+    setInterval('note_poller();', 10000);
 });
 </script>
 </head>

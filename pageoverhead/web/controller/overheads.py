@@ -23,6 +23,7 @@ class OverheadHandler(webapp.RequestHandler):
         bookmark_tags = model.fetch({"user =": users.User(request_user), "url =": page}, model.BookmarkTag)
         bookmark_collaborators = model.fetch({"user =": users.User(request_user), "url =": page}, model.BookmarkCollaborator)
         bookmark_notes = self.get_bookmark_notes(request_user, page)
+        logging.info('found %s notes' % bookmark_notes.count())
 
         access = ""
         tags_str = ""

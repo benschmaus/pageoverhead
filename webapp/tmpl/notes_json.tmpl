@@ -1,0 +1,17 @@
+{
+{% for note in notes %}
+    '{{ note.key }}': {
+        user: '{{ note.user }}',
+        text: '{{ note.note_as_one_line }}',
+        created: '{{ note.created }}',
+        modified: '{{ note.local_modified|date:"M d, fA T" }}',
+        width: {{ note.width }},
+        height: {{ note.height }},
+        top: {{ note.top }},
+        left: {{ note.left }},
+        key: '{{ note.key }}',
+        type: 'note',
+        is_unsaved: function() { return this.key.search(/^\d+$/) != -1;  }
+    },
+{% endfor %}
+}
