@@ -36,7 +36,7 @@ function display_note(note_data) {
     if (note_data.type != 'note') {
         // Default note when adding a new one
         note_data = {
-            user: '{{ user }}',
+            user: '{{ logged_in_user }}',
             text: '',
             modified: displayable_update_time(),
             height: 150,
@@ -47,9 +47,17 @@ function display_note(note_data) {
         };
     }
     var note = $('<div class="Note">').append($('<textarea></textarea>').append(note_data.text));
-    if (note_data.key != null) {
-        note.append($('<span>' + note_data.key + '</span>').hide());
+    if (note_data.key == null) {
+        // New, unsaved note
+        var temp_id = ''+new Date().getTime();
+        note_data.key = temp_id;
+        notes[temp_id] = note_data;
     }
+
+    // Cross reference note html divs and raw note data
+    note_data['note_div'] = note;
+    note.data('note_data', note_data);
+
     note.dialog(
         {
             title: note_data.user + '<br/>' + note_data.modified,
@@ -65,11 +73,11 @@ function display_note(note_data) {
 // runs when note is closed. if previously saved it is deleted.
 function delete_note(e) {
     var note = $(e.target);
-    var note_key_container = note.children('span');
-    if (note_key_container.size() < 1) {
+    var note_key = note.data('note_data').key
+    if (note_key.search(/^\d+$/) != -1) {
         return; // note hasn't been saved so just close it
     }
-    var note_url = "/{{ user }}/overheads/{{ page }}/notes/" + note_key_container.get(0).innerText;
+    var note_url = "/{{ user }}/overheads/{{ page }}/notes/" + note_key;
     $.post(
         note_url,
         { 'delete': 'true' },
@@ -95,9 +103,9 @@ function save_note() {
     var width = note_dialog.width();
     var text = note.children('textarea').get(0).value;
     var note_url = "/{{ user }}/overheads/{{ page }}/notes";
-    var note_key_container = note.children('span');
-    if (note_key_container.size() > 0) {
-        note_url += '/' + note_key_container.get(0).innerText;
+    var note_key = note.data('note_data').key;
+    if (note_key.search(/^\d+$/) == -1) {
+        note_url += '/' + note.data('note_data').key;
     }
     // for testing
     //note.children('textarea').get(0).value = text + '\n' + oLeft + ' ' + oTop + '\n' + height + ' ' + width;
@@ -108,12 +116,21 @@ function save_note() {
             if (textStatus == "success") {
                 // TODO ??? Use something safer that only converts JSON see http://www.json.org/js.html.
                 data = eval('(' + data + ')');
-                if (note_url.match('notes/?$') != null) {
-                    note.append($('<span>' + data.key + '</span>').hide());
-                }
                 // Update notes title to include new update time
                 var title = note.dialog('option', 'title').split('<br/>');
                 note.dialog('option', 'title', title[0] + '<br/>' + displayable_update_time());
+
+                // Grab existing note_data obj
+                var note_data = note.data('note_data');
+
+                // Remove previous unsaved note from notes container
+                delete notes[note_data.key];
+
+                // Update key val to new key and re-attach to note and notes container
+                note_data.key = data.key;
+                note.data('notes_data', note_data);
+                notes[note_data.key] = note_data;
+
             } else {
                 alert('Note not saved: ' + textStatus);
             }
@@ -142,23 +159,29 @@ function save_collaborators() {
 
 var collaborators = '{{collaborators}}';
 
+var notes = {};
+// Data structure for existing notes
+{% for existing_bookmark_note in notes %}
+notes['{{ existing_bookmark_note.key }}'] = {
+    user: '{{ existing_bookmark_note.author }}',
+    text: '{{ existing_bookmark_note.note_as_one_line|escape }}',
+    created: '{{ existing_bookmark_note.created }}',
+    modified: '{{ existing_bookmark_note.local_modified|date:"M d, fA T" }}',
+    width: {{ existing_bookmark_note.width }},
+    height: {{ existing_bookmark_note.height }},
+    top: {{ existing_bookmark_note.top }},
+    left: {{ existing_bookmark_note.left }},
+    key: '{{ existing_bookmark_note.key }}',
+    type: 'note'
+};
+{% endfor %}
+
 // TODO ??? Move some of this to external script
 $(document).ready(function() {
-    // Add existing notes to the page. TODO ??? Move into another tmpl?
-    {% for existing_bookmark_note in notes %}
-    display_note({
-        user: '{{ existing_bookmark_note.user }}',
-        text: '{{ existing_bookmark_note.note_as_one_line|escape }}',
-        created: '{{ existing_bookmark_note.created }}',
-        modified: '{{ existing_bookmark_note.local_modified|date:"M d, fA T" }}',
-        width: {{ existing_bookmark_note.width }},
-        height: {{ existing_bookmark_note.height }},
-        top: {{ existing_bookmark_note.top }},
-        left: {{ existing_bookmark_note.left }},
-        key: '{{ existing_bookmark_note.key }}',
-        type: 'note'
-    });
-    {% endfor %}
+
+    for (note_key in notes) {
+        display_note(notes[note_key]);
+    }
 
     $('#add-note').click(display_note);
     $('#manage-collaborators').click(
@@ -190,7 +213,7 @@ $(document).ready(function() {
 <input id="add-note" type="button" value="Add Note"/>
 <input id="manage-collaborators" type="button" value="Manage Collaborators"/>
 tags <input type="text" size="30" name="tags" value="{{ tags }}" />
-<input type="checkbox" value="public" name="access" {% ifequal access "public" %}checked="checked"{% endifequal %} /> public?
+<input type="checkbox" value="public" name="access" {% ifequal access "public" %}checked="checked"{% endifequal %} />world viewable?
 <input type="submit" value="Save"/>
 </form>
 Go to <a href="http://{{ page }}">{{ page }}</a>
