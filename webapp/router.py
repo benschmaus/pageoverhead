@@ -9,9 +9,9 @@ from pageoverhead.web.controller import collaborators
 application = webapp.WSGIApplication(
     [
         ('/', index.IndexHandler),
-        ('/([^/]+)/overheads/([^/]+)/notes/?([^/]+)?', notes.NoteHandler),
-        ('/([^/]+)/overheads/([^/]+)/collaborators', collaborators.CollaboratorHandler),
-        ('/([^/]+)/overheads/(.*)', overheads.OverheadHandler)
+        ('/([^/]+)/overheads/([^/]+)/notes/?([^/]+)?/?', notes.NoteHandler),
+        ('/([^/]+)/overheads/([^/]+)/collaborators/?', collaborators.CollaboratorHandler),
+        ('/([^/]+)/overheads/([^/]*)/?', overheads.OverheadHandler)
     ],
     debug=True
 )

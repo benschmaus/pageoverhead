@@ -273,7 +273,7 @@ $(document).ready(function() {
 
     // poll server looking for note adds/removals.
     // DOM is updated accordingly.
-    setInterval('note_poller();', 10000);
+    setInterval('note_poller();', 3500);
 });
 </script>
 </head>
@@ -283,10 +283,14 @@ $(document).ready(function() {
 <div id='controls'>
 <form method="post" action="/{{ user }}/overheads/{{ page|urlencode }}">
 <input id="add-note" type="button" value="Add Note"/>
+
+{% ifequal user logged_in_user %}
 <input id="manage-collaborators" type="button" value="Manage Collaborators"/>
 tags <input type="text" size="30" name="tags" value="{{ tags }}" />
 <input type="checkbox" value="public" name="access" {% ifequal access "public" %}checked="checked"{% endifequal %} />world viewable?
 <input type="submit" value="Save"/>
+{% endifequal %}
+
 </form>
 Go to <a href="http://{{ page }}">{{ page }}</a>
 </div>
