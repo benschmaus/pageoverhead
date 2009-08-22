@@ -25,14 +25,13 @@ notes['{{ existing_bookmark_note.key }}'] = {
     user: '{{ existing_bookmark_note.user }}',
     text: '{{ existing_bookmark_note.note_as_one_line|escape }}',
     created: '{{ existing_bookmark_note.created }}',
-    modified: '{{ existing_bookmark_note.local_modified|date:"M d, fA T" }}',
+    modified: '{{ existing_bookmark_note.local_modified|date:"M d, f:sA T" }}',
     width: {{ existing_bookmark_note.width }},
     height: {{ existing_bookmark_note.height }},
     top: {{ existing_bookmark_note.top }},
     left: {{ existing_bookmark_note.left }},
     key: '{{ existing_bookmark_note.key }}',
-    type: 'note',
-    is_unsaved: function() { return this.key.search(/^\d+$/) != -1;  }
+    type: 'note'
 };
 {% endfor %}
 
@@ -44,15 +43,28 @@ function zero_pad(s) {
     return s < 10 ? "0" + s : s;
 }
 
+// From http://happygiraffe.net/blog/2007/09/26/jquery-logging/
+jQuery.fn.log = function(msg) {
+    console.log("%s: %o", msg, this);
+    return this;
+};
+
+
+// True if note_data obj has temp timestamp key
+function is_note_unsaved(note_data) {
+    return note_data.key.search(/^\d+$/) != -1;
+}
+
 function displayable_update_time() {
     var today = new Date();
     var d = zero_pad(today.getDate());
     var h = today.getHours();
     var m = zero_pad(today.getMinutes());
+    var s = zero_pad(today.getSeconds());
     var tz = today.getTimezoneOffset() > 240 ? 'EST' : 'EDT';
     var ampm = h < 12 ? 'AM' : 'PM';
     var hr12 = h % 12;
-    return months[today.getMonth()] + " " + d + ", " + (hr12 == 0 ? 12 : hr12) + ":" + m + " " + ampm + ' ' + tz;
+    return months[today.getMonth()] + " " + d + ", " + (hr12 == 0 ? 12 : hr12) + ":" + m + ":" + s + "" + ampm + ' ' + tz;
 }
 
 function display_note(note_data) {
@@ -67,8 +79,7 @@ function display_note(note_data) {
             width: 240,
             left:  8,
             top: 100,
-            key: null,
-            is_unsaved: function() { return this.key.search(/^\d+$/) != -1;  }
+            key: null
         };
     }
     var note = $('<div class="Note">');
@@ -215,7 +226,7 @@ function note_poller() {
                     if (data[note_key] == undefined) {
                         // Don't remove notes that haven't been saved
                         var note_data = notes[note_key];
-                        if (!note_data.is_unsaved()) {
+                        if (!is_note_unsaved(note_data)) {
                             remove_note(note_data);
                         }
                     }
@@ -239,7 +250,9 @@ function note_poller() {
                         }
                     }
                 }
-            } // else try next time
+            } else {
+                $().log('Problem getting note updates from server, reason: ' + textStatus);
+            }
        },
        'json'
     );
@@ -273,7 +286,7 @@ $(document).ready(function() {
 
     // poll server looking for note adds/removals.
     // DOM is updated accordingly.
-    setInterval('note_poller();', 3500);
+    setInterval('note_poller();', 60000);
 });
 </script>
 </head>

@@ -10,8 +10,7 @@
         top: {{ note.top }},
         left: {{ note.left }},
         key: '{{ note.key }}',
-        type: 'note',
-        is_unsaved: function() { return this.key.search(/^\d+$/) != -1;  }
+        type: 'note'
     },
 {% endfor %}
 }
